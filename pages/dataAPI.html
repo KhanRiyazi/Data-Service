@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Science Mastery API</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #050810;
+            --surface: rgba(8, 14, 28, 0.85);
+            --border: rgba(0, 255, 163, 0.18);
+            --border-hover: rgba(0, 255, 163, 0.6);
+            --accent: #00ffa3;
+            --accent2: #ff6b35;
+            --accent3: #c77dff;
+            --text: #d4e5e0;
+            --muted: #5a7a72;
+            --mono: 'Space Mono', monospace;
+            --sans: 'Syne', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            font-family: var(--sans);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ── GRID NOISE BACKGROUND ── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0, 255, 163, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 163, 0.03) 1px, transparent 1px);
+            background-size: 44px 44px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0, 255, 163, 0.07) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .page {
+            position: relative;
+            z-index: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 3rem 2rem 4rem;
+        }
+
+        /* ── HEADER ── */
+        header {
+            margin-bottom: 3.5rem;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: end;
+            gap: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 2rem;
+        }
+
+        .header-left {}
+
+        .tag {
+            font-family: var(--mono);
+            font-size: 0.7rem;
+            color: var(--accent);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-bottom: 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tag::before {
+            content: '';
+            display: block;
+            width: 18px;
+            height: 1px;
+            background: var(--accent);
+        }
+
+        h1 {
+            font-family: var(--sans);
+            font-size: clamp(2.4rem, 5vw, 4.2rem);
+            font-weight: 900;
+            line-height: 0.95;
+            letter-spacing: -0.03em;
+            color: #fff;
+        }
+
+        h1 em {
+            font-style: normal;
+            color: var(--accent);
+        }
+
+        .header-meta {
+            font-family: var(--mono);
+            font-size: 0.72rem;
+            color: var(--muted);
+            line-height: 1.9;
+            text-align: right;
+        }
+
+        .header-meta span {
+            color: var(--accent);
+        }
+
+        /* ── STATUS BAR ── */
+        .status-bar {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-pill {
+            font-family: var(--mono);
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--muted);
+            border: 1px solid rgba(90, 122, 114, 0.3);
+            padding: 0.35rem 0.9rem;
+            border-radius: 100px;
+        }
+
+        .stat-pill .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.4;
+                transform: scale(0.8);
+            }
+        }
+
+        /* ── CATEGORIES GRID ── */
+        .categories {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        /* ── PANEL (parent) ── */
+        details.panel {
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            background: var(--surface);
+            backdrop-filter: blur(12px);
+            transition: border-color 0.25s, box-shadow 0.25s;
+            overflow: hidden;
+        }
+
+        details.panel:hover {
+            border-color: rgba(0, 255, 163, 0.35);
+        }
+
+        details.panel[open] {
+            border-color: var(--border-hover);
+            box-shadow: 0 0 0 1px rgba(0, 255, 163, 0.1), inset 0 0 60px rgba(0, 255, 163, 0.02);
+        }
+
+        details.panel summary {
+            list-style: none;
+            display: grid;
+            grid-template-columns: 3rem 1fr auto auto;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.1rem 1.4rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        details.panel summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .panel-index {
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            color: var(--muted);
+            letter-spacing: 0.1em;
+        }
+
+        .panel-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #e8f5f0;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+        }
+
+        .panel-title i {
+            color: var(--accent);
+            font-size: 0.9rem;
+            width: 16px;
+        }
+
+        .panel-count {
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .panel-chevron {
+            color: var(--muted);
+            font-size: 0.7rem;
+            transition: transform 0.3s ease, color 0.2s;
+        }
+
+        details.panel[open] .panel-chevron {
+            transform: rotate(180deg);
+            color: var(--accent);
+        }
+
+        /* ── CONTENT AREA ── */
+        .panel-body {
+            padding: 0 1.4rem 1.4rem;
+            border-top: 1px solid rgba(0, 255, 163, 0.08);
+            margin-top: -1px;
+        }
+
+        .section-label {
+            font-family: var(--mono);
+            font-size: 0.6rem;
+            color: var(--muted);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin: 1.1rem 0 0.7rem;
+        }
+
+        /* ── RESOURCE BUTTONS (child) ── */
+        .resources {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .res-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(90, 122, 114, 0.4);
+            border-radius: 2px;
+            background: rgba(0, 255, 163, 0.03);
+            color: #c0dbd5;
+            font-family: var(--mono);
+            font-size: 0.72rem;
+            text-decoration: none;
+            letter-spacing: 0.02em;
+            transition: all 0.18s ease;
+            position: relative;
+        }
+
+        .res-btn i {
+            font-size: 0.7rem;
+            color: var(--muted);
+            transition: color 0.18s;
+        }
+
+        .res-btn:hover {
+            border-color: var(--accent);
+            background: rgba(0, 255, 163, 0.08);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 163, 0.12);
+        }
+
+        .res-btn:hover i {
+            color: var(--accent);
+        }
+
+        /* Type badges */
+        .res-btn .badge {
+            font-size: 0.55rem;
+            padding: 0.1rem 0.4rem;
+            border-radius: 2px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .badge-free {
+            background: rgba(0, 255, 163, 0.15);
+            color: var(--accent);
+        }
+
+        .badge-course {
+            background: rgba(199, 125, 255, 0.15);
+            color: var(--accent3);
+        }
+
+        .badge-ref {
+            background: rgba(255, 107, 53, 0.15);
+            color: var(--accent2);
+        }
+
+        .badge-book {
+            background: rgba(255, 200, 50, 0.15);
+            color: #ffc832;
+        }
+
+        /* ── MICRO LINKS ── */
+        .micro-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.6rem;
+        }
+
+        .micro {
+            font-family: var(--mono);
+            font-size: 0.62rem;
+            color: var(--muted);
+            text-decoration: none;
+            padding: 0.25rem 0.6rem;
+            border-bottom: 1px solid rgba(90, 122, 114, 0.3);
+            transition: color 0.15s, border-color 0.15s;
+            letter-spacing: 0.05em;
+        }
+
+        .micro:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        /* ── ROADMAP BANNER ── */
+        .roadmap {
+            margin-top: 2.5rem;
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            padding: 1.5rem 2rem;
+            background: var(--surface);
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .roadmap-label {
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            color: var(--muted);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .roadmap-steps {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            flex-wrap: wrap;
+        }
+
+        .step {
+            font-family: var(--mono);
+            font-size: 0.68rem;
+            color: var(--text);
+            white-space: nowrap;
+        }
+
+        .step-arrow {
+            color: var(--muted);
+            font-size: 0.6rem;
+            padding: 0 0.4rem;
+        }
+
+        .step.highlight {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .roadmap-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: var(--mono);
+            font-size: 0.72rem;
+            color: var(--accent);
+            border: 1px solid var(--border-hover);
+            padding: 0.6rem 1.3rem;
+            border-radius: 2px;
+            text-decoration: none;
+            transition: all 0.2s;
+            white-space: nowrap;
+            cursor: pointer;
+            background: transparent;
+            letter-spacing: 0.08em;
+        }
+
+        .roadmap-btn:hover {
+            background: rgba(0, 255, 163, 0.1);
+            box-shadow: 0 0 20px rgba(0, 255, 163, 0.2);
+        }
+
+        /* ── FOOTER ── */
+        footer {
+            margin-top: 2.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        footer p {
+            font-family: var(--mono);
+            font-size: 0.62rem;
+            color: var(--muted);
+        }
+
+        footer span {
+            color: var(--accent);
+        }
+
+        /* ── ANIMATIONS ── */
+        .panel {
+            animation: slideIn 0.4s ease both;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .categories .panel:nth-child(1) {
+            animation-delay: 0.05s;
+        }
+
+        .categories .panel:nth-child(2) {
+            animation-delay: 0.10s;
+        }
+
+        .categories .panel:nth-child(3) {
+            animation-delay: 0.15s;
+        }
+
+        .categories .panel:nth-child(4) {
+            animation-delay: 0.20s;
+        }
+
+        .categories .panel:nth-child(5) {
+            animation-delay: 0.25s;
+        }
+
+        .categories .panel:nth-child(6) {
+            animation-delay: 0.30s;
+        }
+
+        .categories .panel:nth-child(7) {
+            animation-delay: 0.35s;
+        }
+
+        .categories .panel:nth-child(8) {
+            animation-delay: 0.40s;
+        }
+
+        .categories .panel:nth-child(9) {
+            animation-delay: 0.45s;
+        }
+
+        .categories .panel:nth-child(10) {
+            animation-delay: 0.50s;
+        }
+
+        @media (max-width: 640px) {
+            details.panel summary {
+                grid-template-columns: 2.5rem 1fr auto;
+            }
+
+            .panel-count {
+                display: none;
+            }
+
+            .roadmap {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                grid-template-columns: 1fr;
+            }
+
+            .header-meta {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+
+        <!-- HEADER -->
+        <header>
+            <div class="header-left">
+                <div class="tag">v2.0 · Learning Interface</div>
+                <h1>Data<br>Science <em>API</em></h1>
+            </div>
+            <div class="header-meta">
+                STATUS <span>ONLINE</span><br>
+                MODULES <span>10</span><br>
+                RESOURCES <span>42+</span><br>
+                UPDATED <span>2025</span>
+            </div>
+        </header>
+
+        <!-- STATUS BAR -->
+        <div class="status-bar">
+            <div class="stat-pill"><span class="dot"></span> All systems operational</div>
+            <div class="stat-pill">10 modules loaded</div>
+            <div class="stat-pill">Free · Course · Ref · Book</div>
+        </div>
+
+        <!-- CATEGORIES -->
+        <div class="categories">
+
+            <!-- 01 -->
+            <details class="panel" open>
+                <summary>
+                    <span class="panel-index">01</span>
+                    <span class="panel-title"><i class="fas fa-calculator"></i> Mathematics & Statistics</span>
+                    <span class="panel-count">5 resources</span>
+                    <i class="fas fa-chevron-down panel-chevron"></i>
+                </summary>
+                <div class="panel-body">
+                    <div class="section-label">Core Resources</div>
+                    <div class="resources">
+                        <a href="https://www.khanacademy.org/math/linear-algebra" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Linear Algebra <span
+                                class="badge badge-free">free</span>
+                        </a>
+                        <a href="https://www.khanacademy.org/math/statistics-probability" target="_blank"
+                            class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Probability & Stats <span
+                                class="badge badge-free">free</span>
+                        </a>
+                        <a href="https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/" target="_blank"
+                            class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> MIT 18.06 <span
+                                class="badge badge-free">free</span>
+                        </a>
+                        <a href="https://seeing-theory.brown.edu/" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Seeing Theory <span
+                                class="badge badge-free">free</span>
+                        </a>
+                    </div>
+                    <div class="micro-row">
+                        <a href="https://www.coursera.org/learn/machine-learning-math" target="_blank" class="micro">↗
+                            Math for ML · Coursera</a>
+                        <a href="https://www.3blue1brown.com/topics/linear-algebra" target="_blank" class="micro">↗
+                            3Blue1Brown · Visual LA</a>
+                        <a href="https://www.statlearning.com/" target="_blank" class="micro">↗ ISLR · Free Book</a>
+                    </div>
+                </div>
+            </details>
+
+            <!-- 02 -->
+            <details class="panel">
+                <summary>
+                    <span class="panel-index">02</span>
+                    <span class="panel-title"><i class="fab fa-python"></i> Python & SQL</span>
+                    <span class="panel-count">6 resources</span>
+                    <i class="fas fa-chevron-down panel-chevron"></i>
+                </summary>
+                <div class="panel-body">
+                    <div class="section-label">Language Fundamentals</div>
+                    <div class="resources">
+                        <a href="https://docs.python.org/3/tutorial/" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Python Docs <span
+                                class="badge badge-ref">ref</span>
+                        </a>
+                        <a href="https://numpy.org/doc/stable/" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> NumPy <span class="badge badge-ref">ref</span>
+                        </a>
+                        <a href="https://pandas.pydata.org/docs/" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Pandas <span class="badge badge-ref">ref</span>
+                        </a>
+                        <a href="https://www.postgresql.org/docs/current/tutorial.html" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> PostgreSQL <span class="badge badge-ref">ref</span>
+                        </a>
+                        <a href="https://dev.mysql.com/doc/refman/8.0/en/tutorial.html" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> MySQL <span class="badge badge-ref">ref</span>
+                        </a>
+                    </div>
+                    <div class="micro-row">
+                        <a href="https://sqlite.org/docs.html" target="_blank" class="micro">↗ SQLite Docs</a>
+                        <a href="https://sqlbolt.com/" target="_blank" class="micro">↗ SQLBolt · Interactive</a>
+                        <a href="https://realpython.com/" target="_blank" class="micro">↗ Real Python</a>
+                    </div>
+                </div>
+            </details>
+
+            <!-- 03 -->
+            <details class="panel">
+                <summary>
+                    <span class="panel-index">03</span>
+                    <span class="panel-title"><i class="fas fa-file-excel"></i> Excel & Data Cleaning</span>
+                    <span class="panel-count">4 resources</span>
+                    <i class="fas fa-chevron-down panel-chevron"></i>
+                </summary>
+                <div class="panel-body">
+                    <div class="section-label">Tools</div>
+                    <div class="resources">
+                        <a href="https://support.microsoft.com/en-us/excel" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Microsoft Excel Help <span
+                                class="badge badge-ref">ref</span>
+                        </a>
+                        <a href="https://exceljet.net/" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Exceljet <span class="badge badge-free">free</span>
+                        </a>
+                        <a href="https://www.contextures.com/" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Contextures · Pivots <span
+                                class="badge badge-free">free</span>
+                        </a>
+                        <a href="https://openrefine.org/docs" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> OpenRefine <span
+                                class="badge badge-free">free</span>
+                        </a>
+                    </div>
+                    <div class="micro-row">
+                        <a href="https://www.ablebits.com/office-addins-blog/" target="_blank" class="micro">↗ AbleBits
+                            Blog</a>
+                        <a href="https://chandoo.org/wp/" target="_blank" class="micro">↗ Chandoo · Excel</a>
+                    </div>
+                </div>
+            </details>
+
+            <!-- 04 -->
+            <details class="panel">
+                <summary>
+                    <span class="panel-index">04</span>
+                    <span class="panel-title"><i class="fas fa-chart-pie"></i> Data Analysis & Visualization</span>
+                    <span class="panel-count">5 resources</span>
+                    <i class="fas fa-chevron-down panel-chevron"></i>
+                </summary>
+                <div class="panel-body">
+                    <div class="section-label">Libraries & Platforms</div>
+                    <div class="resources">
+                        <a href="https://matplotlib.org/stable/tutorials/index.html" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Matplotlib <span class="badge badge-ref">ref</span>
+                        </a>
+                        <a href="https://seaborn.pydata.org/tutorial.html" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Seaborn <span class="badge badge-ref">ref</span>
+                        </a>
+                        <a href="https://plotly.com/python/plotly-fundamentals/" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Plotly <span class="badge badge-ref">ref</span>
+                        </a>
+                        <a href="https://learn.microsoft.com/en-us/power-bi/fundamentals/" target="_blank"
+                            class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Power BI <span class="badge badge-free">free</span>
+                        </a>
+                        <a href="https://help.tableau.com/current/pro/desktop/en-us/default.htm" target="_blank"
+                            class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Tableau <span class="badge badge-ref">ref</span>
+                        </a>
+                    </div>
+                    <div class="micro-row">
+                        <a href="https://altair-viz.github.io/" target="_blank" class="micro">↗ Altair · Vega</a>
+                        <a href="https://d3js.org/" target="_blank" class="micro">↗ D3.js</a>
+                        <a href="https://www.data-to-viz.com/" target="_blank" class="micro">↗ From Data to Viz</a>
+                    </div>
+                </div>
+            </details>
+
+            <!-- 05 -->
+            <details class="panel">
+                <summary>
+                    <span class="panel-index">05</span>
+                    <span class="panel-title"><i class="fas fa-cogs"></i> Machine Learning</span>
+                    <span class="panel-count">4 resources</span>
+                    <i class="fas fa-chevron-down panel-chevron"></i>
+                </summary>
+                <div class="panel-body">
+                    <div class="section-label">Courses & Libraries</div>
+                    <div class="resources">
+                        <a href="https://scikit-learn.org/stable/user_guide.html" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Scikit-Learn <span
+                                class="badge badge-ref">ref</span>
+                        </a>
+                        <a href="https://www.kaggle.com/learn" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Kaggle Learn <span
+                                class="badge badge-free">free</span>
+                        </a>
+                        <a href="https://developers.google.com/machine-learning/crash-course" target="_blank"
+                            class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Google ML Crash Course <span
+                                class="badge badge-free">free</span>
+                        </a>
+                        <a href="https://www.coursera.org/specializations/machine-learning-introduction" target="_blank"
+                            class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Andrew Ng · ML Spec. <span
+                                class="badge badge-course">course</span>
+                        </a>
+                    </div>
+                    <div class="micro-row">
+                        <a href="https://mlcourse.ai/book/index.html" target="_blank" class="micro">↗ mlcourse.ai ·
+                            Free</a>
+                        <a href="https://www.statlearning.com/" target="_blank" class="micro">↗ ISLR · Statistical
+                            Learning</a>
+                        <a href="https://explained.ai/" target="_blank" class="micro">↗ Explained.ai</a>
+                    </div>
+                </div>
+            </details>
+
+            <!-- 06 -->
+            <details class="panel">
+                <summary>
+                    <span class="panel-index">06</span>
+                    <span class="panel-title"><i class="fas fa-network-wired"></i> Deep Learning</span>
+                    <span class="panel-count">5 resources</span>
+                    <i class="fas fa-chevron-down panel-chevron"></i>
+                </summary>
+                <div class="panel-body">
+                    <div class="section-label">Frameworks & Books</div>
+                    <div class="resources">
+                        <a href="https://www.tensorflow.org/learn" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> TensorFlow <span class="badge badge-ref">ref</span>
+                        </a>
+                        <a href="https://pytorch.org/tutorials/" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> PyTorch <span class="badge badge-ref">ref</span>
+                        </a>
+                        <a href="https://keras.io/guides/" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Keras <span class="badge badge-ref">ref</span>
+                        </a>
+                        <a href="https://d2l.ai/" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Dive into Deep Learning <span
+                                class="badge badge-book">book</span>
+                        </a>
+                        <a href="https://course.fast.ai/" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> fast.ai <span class="badge badge-free">free</span>
+                        </a>
+                    </div>
+                    <div class="micro-row">
+                        <a href="https://cs231n.github.io/" target="_blank" class="micro">↗ Stanford CS231n</a>
+                        <a href="https://cs224n.stanford.edu/" target="_blank" class="micro">↗ Stanford CS224n · NLP</a>
+                        <a href="https://uvadlc-notebooks.readthedocs.io/" target="_blank" class="micro">↗ UvA DL
+                            Notebooks</a>
+                    </div>
+                </div>
+            </details>
+
+            <!-- 07 -->
+            <details class="panel">
+                <summary>
+                    <span class="panel-index">07</span>
+                    <span class="panel-title"><i class="fas fa-magic"></i> Generative AI</span>
+                    <span class="panel-count">5 resources</span>
+                    <i class="fas fa-chevron-down panel-chevron"></i>
+                </summary>
+                <div class="panel-body">
+                    <div class="section-label">APIs & Tooling</div>
+                    <div class="resources">
+                        <a href="https://platform.openai.com/docs/overview" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> OpenAI API <span class="badge badge-ref">ref</span>
+                        </a>
+                        <a href="https://docs.anthropic.com/" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Anthropic / Claude API <span
+                                class="badge badge-ref">ref</span>
+                        </a>
+                        <a href="https://python.langchain.com/docs/introduction/" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> LangChain <span class="badge badge-ref">ref</span>
+                        </a>
+                        <a href="https://huggingface.co/learn/nlp-course" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Hugging Face NLP <span
+                                class="badge badge-free">free</span>
+                        </a>
+                        <a href="https://modelcontextprotocol.io/docs" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> MCP · Anthropic <span
+                                class="badge badge-ref">ref</span>
+                        </a>
+                    </div>
+                    <div class="micro-row">
+                        <a href="https://www.pinecone.io/learn/" target="_blank" class="micro">↗ Pinecone · Vector
+                            DB</a>
+                        <a href="https://docs.llamaindex.ai/" target="_blank" class="micro">↗ LlamaIndex</a>
+                        <a href="https://www.promptingguide.ai/" target="_blank" class="micro">↗ Prompting Guide</a>
+                    </div>
+                </div>
+            </details>
+
+            <!-- 08 -->
+            <details class="panel">
+                <summary>
+                    <span class="panel-index">08</span>
+                    <span class="panel-title"><i class="fas fa-user-astronaut"></i> Agentic AI</span>
+                    <span class="panel-count">4 resources</span>
+                    <i class="fas fa-chevron-down panel-chevron"></i>
+                </summary>
+                <div class="panel-body">
+                    <div class="section-label">Frameworks</div>
+                    <div class="resources">
+                        <a href="https://python.langchain.com/docs/how_to/#agents" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> LangChain Agents <span
+                                class="badge badge-ref">ref</span>
+                        </a>
+                        <a href="https://platform.openai.com/docs/guides/function-calling" target="_blank"
+                            class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Function Calling <span
+                                class="badge badge-ref">ref</span>
+                        </a>
+                        <a href="https://docs.crewai.com/" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> CrewAI <span class="badge badge-ref">ref</span>
+                        </a>
+                        <a href="https://microsoft.github.io/autogen/" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> AutoGen <span class="badge badge-free">free</span>
+                        </a>
+                    </div>
+                    <div class="micro-row">
+                        <a href="https://docs.anthropic.com/en/docs/build-with-claude/agents" target="_blank"
+                            class="micro">↗ Claude Agents Guide</a>
+                        <a href="https://arxiv.org/abs/2309.07864" target="_blank" class="micro">↗ ReAct Paper ·
+                            arXiv</a>
+                    </div>
+                </div>
+            </details>
+
+            <!-- 09 -->
+            <details class="panel">
+                <summary>
+                    <span class="panel-index">09</span>
+                    <span class="panel-title"><i class="fas fa-cloud"></i> MLOps & Cloud</span>
+                    <span class="panel-count">4 resources</span>
+                    <i class="fas fa-chevron-down panel-chevron"></i>
+                </summary>
+                <div class="panel-body">
+                    <div class="section-label">Deployment & Infrastructure</div>
+                    <div class="resources">
+                        <a href="https://mlflow.org/docs/latest/index.html" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> MLflow <span class="badge badge-free">free</span>
+                        </a>
+                        <a href="https://docs.aws.amazon.com/sagemaker/latest/dg/whatis.html" target="_blank"
+                            class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> AWS SageMaker <span
+                                class="badge badge-ref">ref</span>
+                        </a>
+                        <a href="https://cloud.google.com/vertex-ai/docs" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Vertex AI <span class="badge badge-ref">ref</span>
+                        </a>
+                        <a href="https://azure.microsoft.com/en-us/products/machine-learning" target="_blank"
+                            class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Azure ML <span class="badge badge-ref">ref</span>
+                        </a>
+                    </div>
+                    <div class="micro-row">
+                        <a href="https://dvc.org/doc" target="_blank" class="micro">↗ DVC · Data Versioning</a>
+                        <a href="https://docs.docker.com/" target="_blank" class="micro">↗ Docker Docs</a>
+                        <a href="https://www.prefect.io/opensource" target="_blank" class="micro">↗ Prefect ·
+                            Pipelines</a>
+                    </div>
+                </div>
+            </details>
+
+            <!-- 10 -->
+            <details class="panel">
+                <summary>
+                    <span class="panel-index">10</span>
+                    <span class="panel-title"><i class="fas fa-briefcase"></i> Business & Storytelling</span>
+                    <span class="panel-count">3 resources</span>
+                    <i class="fas fa-chevron-down panel-chevron"></i>
+                </summary>
+                <div class="panel-body">
+                    <div class="section-label">Communication & Strategy</div>
+                    <div class="resources">
+                        <a href="https://www.storytellingwithdata.com/" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Storytelling with Data <span
+                                class="badge badge-book">book</span>
+                        </a>
+                        <a href="https://www.coursera.org/learn/analytics-excel" target="_blank" class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Business Analytics <span
+                                class="badge badge-course">course</span>
+                        </a>
+                        <a href="https://www.khanacademy.org/economics-finance-domain/core-finance" target="_blank"
+                            class="res-btn">
+                            <i class="fas fa-external-link-alt"></i> Finance Fundamentals <span
+                                class="badge badge-free">free</span>
+                        </a>
+                    </div>
+                    <div class="micro-row">
+                        <a href="https://hbr.org/topic/data" target="_blank" class="micro">↗ HBR Data Articles</a>
+                        <a href="https://mode.com/sql-tutorial/" target="_blank" class="micro">↗ Mode Analytics SQL</a>
+                    </div>
+                </div>
+            </details>
+
+        </div><!-- /categories -->
+
+        <!-- ROADMAP -->
+        <div class="roadmap">
+            <div>
+                <div class="roadmap-label">12-Month Learning Roadmap</div>
+                <div class="roadmap-steps">
+                    <span class="step highlight">Math</span>
+                    <span class="step-arrow">→</span>
+                    <span class="step">Python/SQL</span>
+                    <span class="step-arrow">→</span>
+                    <span class="step">Excel</span>
+                    <span class="step-arrow">→</span>
+                    <span class="step">Analysis</span>
+                    <span class="step-arrow">→</span>
+                    <span class="step">ML</span>
+                    <span class="step-arrow">→</span>
+                    <span class="step">Deep Learning</span>
+                    <span class="step-arrow">→</span>
+                    <span class="step">Gen AI</span>
+                    <span class="step-arrow">→</span>
+                    <span class="step highlight">Agentic AI</span>
+                </div>
+            </div>
+            <button class="roadmap-btn"
+                onclick="alert('🗺️ 12-Month Roadmap\n\nMon 1-2: Math foundations\nMon 3-4: Python & SQL\nMon 5: Data cleaning & Excel\nMon 6-7: Analysis & visualization\nMon 8-9: Machine learning\nMon 10: Deep learning\nMon 11: Generative AI\nMon 12: Agentic AI & MLOps\n\nStay consistent. Build projects.')">
+                <i class="fas fa-map-signs"></i> View Details
+            </button>
+        </div>
+
+        <!-- FOOTER -->
+        <footer>
+            <p><span>Data Science API</span> · v2.0 · Interactive Learning Index</p>
+            <p>42+ curated resources · <span>free · course · ref · book</span></p>
+        </footer>
+
+    </div>
+
+    <script>
+        // Highlight parent border on child click
+        document.querySelectorAll('.res-btn, .micro').forEach(el => {
+            el.addEventListener('click', () => {
+                const panel = el.closest('details');
+                if (!panel) return;
+                panel.style.borderColor = 'var(--accent)';
+                panel.style.boxShadow = '0 0 0 1px rgba(0,255,163,0.3)';
+                setTimeout(() => {
+                    panel.style.borderColor = '';
+                    panel.style.boxShadow = '';
+                }, 600);
+            });
+        });
+
+        // Smooth open animation for panel content
+        document.querySelectorAll('details.panel').forEach(d => {
+            d.addEventListener('toggle', () => {
+                if (d.open) {
+                    const body = d.querySelector('.panel-body');
+                    if (body) {
+                        body.style.animation = 'none';
+                        body.offsetHeight;
+                        body.style.animation = 'slideIn 0.25s ease both';
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

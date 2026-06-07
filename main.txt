@@ -1,0 +1,54 @@
+
+---
+
+## 🔁 Weekly Freelance Routine (Second Brain Rhythm)
+
+| Day | Action |
+|-----|--------|
+| **Monday** | Send 5 personalized outreach messages (Upwork / LinkedIn / Reddit for hiring) |
+| **Tuesday** | 2 discovery calls + send 2 proposals |
+| **Wednesday** | Deep work on active projects |
+| **Thursday** | Follow-up on pending proposals + create 1 portfolio update (blog / GitHub commit) |
+| **Friday** | Invoice completed milestones + collect testimonials |
+| **Weekend** | Learn 1 new automation trick + update README / portfolio with new asset |
+
+---
+
+## ⚡ Quick Commands for Daily Ops
+
+| Task | Action |
+|------|--------|
+| Update live portfolio | Edit `index.html` → commit to `main` branch → GitHub Pages auto-deploys |
+| Add new asset | Insert a new `.asset-card` inside the "Digital Footprint" section |
+| Change pricing | Edit `service-rate` divs inside `.service-card` |
+| Collect leads | Form on the webpage sends message preview (customize `#contactForm` to connect to Formspree / Web3Forms for real email) |
+
+> 💡 **To make the contact form actually send emails:** replace the form `action` with a free service like **Formspree** or **Web3Forms**. Add `action="https://formspree.io/f/your-endpoint"` and `method="POST"`.
+
+---
+
+## 🧠 Final Mindset for National & International Clients
+
+- **You are not competing on price.** You are competing on **certainty**, **speed**, and **documentation**. Your second brain (200 repos + 500 blogs + live demos) proves you deliver.
+- **Charge in USD.** Use Wise / PayPal / Payoneer. Mention in proposals: *"Payment in USD via Wise (low fees) or PayPal."*
+- **Over-communicate timeline.** Clients fear silence more than delay. Send a Loom video every 2–3 days.
+- **Ask for testimonials after every project.** Put them on your webpage (add a `.testimonial` section later).
+
+---
+
+## 📬 Get In Touch (For Real Clients)
+
+- **GitHub:** https://github.com/khanriyazi  
+- **Live Portfolio:** [Replace with your GitHub Pages URL]  
+- **Email:** *(add your professional email here before sending to clients)*  
+- **YouTube:** https://www.youtube.com/@ThisOne-007  
+
+---
+
+**Version:** 2.0 | **Last Updated:** 2026  
+*Built with Python, FastAPI, and a second brain that never sleeps.*
+
+--- 
+
+> 🚀 *"Don't just find clients — build a system that makes clients find you."*  
+> — Khan Riyazi
