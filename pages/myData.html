@@ -1,0 +1,1729 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khan Riyazi — Second Brain | Python · FastAPI · Automation</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Outfit:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --bg2: #0f0f1a;
+            --bg3: #141428;
+            --accent: #00f5c4;
+            --accent2: #ff6b35;
+            --accent3: #7c3aed;
+            --text: #e8e8f0;
+            --muted: #6b6b8a;
+            --border: rgba(0, 245, 196, 0.12);
+            --glow: rgba(0, 245, 196, 0.15);
+            --card: rgba(255, 255, 255, 0.03);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        html {
+            scroll-behavior: smooth
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            overflow-x: hidden;
+            cursor: none
+        }
+
+        /* CUSTOM CURSOR */
+        .cursor {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: var(--accent);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform .1s;
+            mix-blend-mode: exclusion
+        }
+
+        .cursor-ring {
+            position: fixed;
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--accent);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            transition: transform .25s, width .3s, height .3s;
+            opacity: .6;
+            mix-blend-mode: exclusion
+        }
+
+        /* NOISE OVERLAY */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+            opacity: .4;
+            pointer-events: none;
+            z-index: 1
+        }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 3px
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg)
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 2px
+        }
+
+        /* NAV */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 1.2rem 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            background: rgba(10, 10, 15, 0.7)
+        }
+
+        .nav-brand {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: var(--accent);
+            letter-spacing: -.02em
+        }
+
+        .nav-brand span {
+            color: var(--text)
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none
+        }
+
+        .nav-links a {
+            font-family: 'DM Mono', monospace;
+            font-size: .75rem;
+            color: var(--muted);
+            text-decoration: none;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            transition: color .2s
+        }
+
+        .nav-links a:hover {
+            color: var(--accent)
+        }
+
+        .nav-cta {
+            font-family: 'DM Mono', monospace;
+            font-size: .75rem;
+            background: var(--accent);
+            color: #000;
+            padding: .5rem 1.4rem;
+            border-radius: 2px;
+            text-decoration: none;
+            font-weight: 400;
+            letter-spacing: .06em;
+            transition: opacity .2s
+        }
+
+        .nav-cta:hover {
+            opacity: .85
+        }
+
+        /* HERO */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 8rem 3rem 4rem;
+            position: relative;
+            overflow: hidden
+        }
+
+        .hero-bg-grid {
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(0, 245, 196, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 245, 196, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            mask-image: radial-gradient(ellipse 80% 80% at 50% 0%, black 40%, transparent 100%)
+        }
+
+        .hero-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            pointer-events: none
+        }
+
+        .orb1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(0, 245, 196, 0.12) 0%, transparent 70%);
+            top: -100px;
+            right: -100px;
+            animation: pulse 6s ease-in-out infinite
+        }
+
+        .orb2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.1) 0%, transparent 70%);
+            bottom: -50px;
+            left: -50px;
+            animation: pulse 8s ease-in-out infinite reverse
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: .6
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 1
+            }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 900px
+        }
+
+        .hero-eyebrow {
+            font-family: 'DM Mono', monospace;
+            font-size: .72rem;
+            color: var(--accent);
+            letter-spacing: .16em;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            animation: fadeUp .6s .2s forwards
+        }
+
+        .hero-title {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: clamp(3rem, 7vw, 6rem);
+            line-height: .95;
+            letter-spacing: -.04em;
+            margin-bottom: 1.8rem;
+            opacity: 0;
+            animation: fadeUp .6s .4s forwards
+        }
+
+        .hero-title .line2 {
+            color: var(--accent)
+        }
+
+        .hero-title .line3 {
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.25);
+            color: transparent
+        }
+
+        .hero-desc {
+            font-size: 1.05rem;
+            color: var(--muted);
+            line-height: 1.7;
+            max-width: 520px;
+            margin-bottom: 2.5rem;
+            opacity: 0;
+            animation: fadeUp .6s .6s forwards
+        }
+
+        .hero-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .6rem;
+            margin-bottom: 2.5rem;
+            opacity: 0;
+            animation: fadeUp .6s .7s forwards
+        }
+
+        .tag {
+            font-family: 'DM Mono', monospace;
+            font-size: .7rem;
+            padding: .35rem .85rem;
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            color: var(--muted);
+            letter-spacing: .06em;
+            transition: all .2s
+        }
+
+        .tag:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--glow)
+        }
+
+        .tag.hot {
+            border-color: rgba(255, 107, 53, 0.3);
+            color: var(--accent2)
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            opacity: 0;
+            animation: fadeUp .6s .85s forwards
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #000;
+            padding: .8rem 2rem;
+            border-radius: 2px;
+            text-decoration: none;
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: .85rem;
+            letter-spacing: .04em;
+            transition: all .25s;
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 245, 196, 0.25)
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text);
+            padding: .8rem 2rem;
+            border-radius: 2px;
+            text-decoration: none;
+            font-family: 'Syne', sans-serif;
+            font-weight: 600;
+            font-size: .85rem;
+            border: 1px solid var(--border);
+            transition: all .25s;
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            color: var(--accent)
+        }
+
+        .hero-stats {
+            position: absolute;
+            right: 3rem;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            z-index: 2;
+            opacity: 0;
+            animation: fadeLeft .6s 1s forwards
+        }
+
+        .stat {
+            text-align: right
+        }
+
+        .stat-num {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 2.2rem;
+            color: var(--accent);
+            line-height: 1
+        }
+
+        .stat-label {
+            font-family: 'DM Mono', monospace;
+            font-size: .65rem;
+            color: var(--muted);
+            letter-spacing: .1em;
+            text-transform: uppercase
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(24px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        @keyframes fadeLeft {
+            from {
+                opacity: 0;
+                transform: translate(20px, -50%)
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(0, -50%)
+            }
+        }
+
+        /* TICKER */
+        .ticker-wrap {
+            overflow: hidden;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            padding: .7rem 0;
+            background: var(--bg2)
+        }
+
+        .ticker {
+            display: flex;
+            animation: ticker 30s linear infinite;
+            white-space: nowrap
+        }
+
+        .ticker-item {
+            font-family: 'DM Mono', monospace;
+            font-size: .7rem;
+            color: var(--muted);
+            padding: 0 2rem;
+            letter-spacing: .1em;
+            text-transform: uppercase
+        }
+
+        .ticker-item span {
+            color: var(--accent);
+            margin-right: .5rem
+        }
+
+        @keyframes ticker {
+            0% {
+                transform: translateX(0)
+            }
+
+            100% {
+                transform: translateX(-50%)
+            }
+        }
+
+        /* SECTION COMMONS */
+        section {
+            padding: 6rem 3rem;
+            position: relative;
+            z-index: 2
+        }
+
+        .section-label {
+            font-family: 'DM Mono', monospace;
+            font-size: .7rem;
+            color: var(--accent);
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            margin-bottom: .8rem;
+            display: flex;
+            align-items: center;
+            gap: .8rem
+        }
+
+        .section-label::before {
+            content: '';
+            width: 30px;
+            height: 1px;
+            background: var(--accent)
+        }
+
+        .section-title {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: clamp(1.8rem, 4vw, 3rem);
+            letter-spacing: -.03em;
+            line-height: 1.05;
+            margin-bottom: 1rem
+        }
+
+        /* SERVICES */
+        .services {
+            background: var(--bg2)
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1px;
+            background: var(--border);
+            margin-top: 3rem;
+            border: 1px solid var(--border)
+        }
+
+        .service-card {
+            background: var(--bg2);
+            padding: 2.5rem;
+            transition: background .3s;
+            position: relative;
+            overflow: hidden
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 0;
+            background: var(--accent);
+            transition: height .4s
+        }
+
+        .service-card:hover::before {
+            height: 100%
+        }
+
+        .service-card:hover {
+            background: var(--bg3)
+        }
+
+        .service-icon {
+            font-size: 1.8rem;
+            margin-bottom: 1.2rem;
+            display: block
+        }
+
+        .service-name {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: .6rem
+        }
+
+        .service-desc {
+            font-size: .875rem;
+            color: var(--muted);
+            line-height: 1.65
+        }
+
+        .service-rate {
+            font-family: 'DM Mono', monospace;
+            font-size: .75rem;
+            color: var(--accent);
+            margin-top: 1.2rem;
+            padding-top: 1.2rem;
+            border-top: 1px solid var(--border)
+        }
+
+        /* ASSETS */
+        .assets {
+            background: var(--bg)
+        }
+
+        .assets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1rem;
+            margin-top: 3rem
+        }
+
+        .asset-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1.6rem;
+            display: flex;
+            flex-direction: column;
+            gap: .8rem;
+            transition: all .3s;
+            text-decoration: none;
+            color: var(--text)
+        }
+
+        .asset-card:hover {
+            border-color: var(--accent);
+            background: var(--glow);
+            transform: translateY(-3px)
+        }
+
+        .asset-badge {
+            font-family: 'DM Mono', monospace;
+            font-size: .65rem;
+            background: rgba(0, 245, 196, 0.1);
+            color: var(--accent);
+            padding: .2rem .6rem;
+            border-radius: 2px;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            width: fit-content
+        }
+
+        .asset-badge.orange {
+            background: rgba(255, 107, 53, 0.1);
+            color: var(--accent2)
+        }
+
+        .asset-badge.purple {
+            background: rgba(124, 58, 237, 0.15);
+            color: #a78bfa
+        }
+
+        .asset-title {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: .95rem
+        }
+
+        .asset-url {
+            font-family: 'DM Mono', monospace;
+            font-size: .68rem;
+            color: var(--muted);
+            word-break: break-all
+        }
+
+        .asset-desc {
+            font-size: .8rem;
+            color: var(--muted);
+            line-height: 1.5
+        }
+
+        /* PROJECTS / WORK */
+        .work {
+            background: var(--bg2);
+            overflow: hidden
+        }
+
+        .work-masonry {
+            columns: 4;
+            column-gap: 1rem;
+            margin-top: 3rem
+        }
+
+        @media(max-width:1100px) {
+            .work-masonry {
+                columns: 3
+            }
+        }
+
+        @media(max-width:700px) {
+            .work-masonry {
+                columns: 2
+            }
+        }
+
+        .work-item {
+            break-inside: avoid;
+            margin-bottom: 1rem;
+            display: block;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            background: var(--bg3);
+            transition: all .3s;
+            text-decoration: none
+        }
+
+        .work-item:hover {
+            border-color: var(--accent);
+            transform: scale(1.02)
+        }
+
+        .work-inner {
+            padding: 1.4rem
+        }
+
+        .work-num {
+            font-family: 'DM Mono', monospace;
+            font-size: .65rem;
+            color: var(--muted);
+            margin-bottom: .5rem
+        }
+
+        .work-name {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: .88rem;
+            color: var(--text);
+            margin-bottom: .3rem;
+            line-height: 1.3
+        }
+
+        .work-type {
+            font-family: 'DM Mono', monospace;
+            font-size: .62rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: .08em
+        }
+
+        .work-arrow {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: .9rem;
+            color: var(--muted);
+            transition: all .2s
+        }
+
+        .work-item:hover .work-arrow {
+            color: var(--accent);
+            transform: translate(2px, -2px)
+        }
+
+        /* PROCESS */
+        .process {
+            background: var(--bg)
+        }
+
+        .process-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+            counter-reset: step
+        }
+
+        .step {
+            position: relative;
+            padding-left: 1rem
+        }
+
+        .step::before {
+            counter-increment: step;
+            content: counter(step, decimal-leading-zero);
+            font-family: 'DM Mono', monospace;
+            font-size: .65rem;
+            color: var(--accent);
+            letter-spacing: .1em;
+            display: block;
+            margin-bottom: 1rem
+        }
+
+        .step-title {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: .5rem
+        }
+
+        .step-desc {
+            font-size: .82rem;
+            color: var(--muted);
+            line-height: 1.6
+        }
+
+        .step::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -1px;
+            width: 1px;
+            height: 0;
+            background: var(--accent);
+            transition: height .5s
+        }
+
+        .step:hover::after {
+            height: 100%
+        }
+
+        /* CONTACT */
+        .contact {
+            background: var(--bg2)
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            margin-top: 3rem;
+            align-items: start
+        }
+
+        @media(max-width:760px) {
+            .contact-grid {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .contact-info p {
+            font-size: .9rem;
+            color: var(--muted);
+            line-height: 1.7;
+            margin-bottom: 1.5rem
+        }
+
+        .contact-links {
+            display: flex;
+            flex-direction: column;
+            gap: .8rem
+        }
+
+        .contact-link {
+            display: flex;
+            align-items: center;
+            gap: 8rem;
+            font-family: 'DM Mono', monospace;
+            font-size: .75rem;
+            color: var(--muted);
+            text-decoration: none;
+            transition: color .2s;
+            gap: .6rem
+        }
+
+        .contact-link:hover {
+            color: var(--accent)
+        }
+
+        .contact-link .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent)
+        }
+
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: .4rem
+        }
+
+        .form-label {
+            font-family: 'DM Mono', monospace;
+            font-size: .65rem;
+            color: var(--muted);
+            letter-spacing: .1em;
+            text-transform: uppercase
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: .75rem 1rem;
+            border-radius: 2px;
+            font-family: 'Outfit', sans-serif;
+            font-size: .875rem;
+            outline: none;
+            transition: border-color .2s;
+            width: 100%
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            border-color: var(--accent)
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 120px
+        }
+
+        .form-select option {
+            background: var(--bg)
+        }
+
+        .form-submit {
+            background: var(--accent);
+            color: #000;
+            padding: .85rem 2rem;
+            border: none;
+            border-radius: 2px;
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: .875rem;
+            cursor: pointer;
+            transition: all .25s;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            width: fit-content
+        }
+
+        .form-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 245, 196, .2)
+        }
+
+        /* FOOTER */
+        footer {
+            padding: 2rem 3rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: gap;
+            z-index: 2;
+            position: relative
+        }
+
+        .footer-brand {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: .9rem;
+            color: var(--accent)
+        }
+
+        .footer-copy {
+            font-family: 'DM Mono', monospace;
+            font-size: .65rem;
+            color: var(--muted);
+            letter-spacing: .06em
+        }
+
+        .footer-socials {
+            display: flex;
+            gap: 1.5rem
+        }
+
+        .footer-socials a {
+            font-family: 'DM Mono', monospace;
+            font-size: .65rem;
+            color: var(--muted);
+            text-decoration: none;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            transition: color .2s
+        }
+
+        .footer-socials a:hover {
+            color: var(--accent)
+        }
+
+        /* MARQUEE CLIENTS */
+        .marquee-section {
+            padding: 3rem;
+            background: var(--bg);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            overflow: hidden
+        }
+
+        .marquee-label {
+            font-family: 'DM Mono', monospace;
+            font-size: .65rem;
+            color: var(--muted);
+            text-align: center;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem
+        }
+
+        .marquee-track {
+            display: flex;
+            gap: 4rem;
+            animation: marquee 20s linear infinite;
+            align-items: center
+        }
+
+        .marquee-item {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--muted);
+            white-space: nowrap;
+            opacity: .5;
+            transition: opacity .2s
+        }
+
+        .marquee-item:hover {
+            opacity: 1;
+            color: var(--accent)
+        }
+
+        @keyframes marquee {
+            0% {
+                transform: translateX(0)
+            }
+
+            100% {
+                transform: translateX(-50%)
+            }
+        }
+
+        /* FLOATING CTA */
+        .float-cta {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 50;
+            background: var(--accent);
+            color: #000;
+            padding: .7rem 1.5rem;
+            border-radius: 30px;
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: .8rem;
+            text-decoration: none;
+            box-shadow: 0 8px 30px rgba(0, 245, 196, .25);
+            transition: all .3s;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            animation: bob 3s ease-in-out infinite
+        }
+
+        .float-cta:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 245, 196, .35)
+        }
+
+        @keyframes bob {
+
+            0%,
+            100% {
+                transform: translateY(0)
+            }
+
+            50% {
+                transform: translateY(-4px)
+            }
+        }
+
+        /* AVAILABLE BADGE */
+        .available {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            font-family: 'DM Mono', monospace;
+            font-size: .68rem;
+            color: #00f5c4;
+            background: rgba(0, 245, 196, 0.07);
+            border: 1px solid rgba(0, 245, 196, 0.2);
+            padding: .35rem .9rem;
+            border-radius: 30px;
+            margin-bottom: 1.2rem
+        }
+
+        .available-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #00f5c4;
+            animation: blink 1.5s ease-in-out infinite
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1)
+            }
+
+            50% {
+                opacity: .4;
+                transform: scale(.8)
+            }
+        }
+
+        /* MOBILE NAV */
+        @media(max-width:768px) {
+            nav {
+                padding: 1rem 1.5rem
+            }
+
+            .nav-links {
+                display: none
+            }
+
+            .hero {
+                padding: 7rem 1.5rem 3rem
+            }
+
+            .hero-stats {
+                display: none
+            }
+
+            section {
+                padding: 4rem 1.5rem
+            }
+
+            .contact-grid {
+                grid-template-columns: 1fr
+            }
+
+            .form-row {
+                grid-template-columns: 1fr
+            }
+
+            footer {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center
+            }
+        }
+
+        /* SCROLL REVEAL */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity .6s, transform .6s
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0)
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="cursor" id="cursor"></div>
+    <div class="cursor-ring" id="cursorRing"></div>
+
+    <nav>
+        <div class="nav-brand">KR<span>.</span></div>
+        <ul class="nav-links">
+            <li><a href="#services">Services</a></li>
+            <li><a href="#assets">Assets</a></li>
+            <li><a href="#work">Work</a></li>
+            <li><a href="#process">Process</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+        <a href="#contact" class="nav-cta">Hire Me →</a>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero" id="home">
+        <div class="hero-bg-grid"></div>
+        <div class="hero-orb orb1"></div>
+        <div class="hero-orb orb2"></div>
+        <div class="hero-content">
+            <div class="available"><span class="available-dot"></span> Open to national &amp; international clients
+            </div>
+            <p class="hero-eyebrow">// Second Brain · Full-Stack Freelancer</p>
+            <h1 class="hero-title">
+                Python.<br>
+                <span class="line2">FastAPI.</span><br>
+                <span class="line3">Automation.</span>
+            </h1>
+            <p class="hero-desc">I build intelligent backends, automation pipelines, web scrapers, and digital systems —
+                turning ideas into deployed, money-making products. Based in India, working globally.</p>
+            <div class="hero-tags">
+                <span class="tag">FastAPI</span>
+                <span class="tag">Web Scraping</span>
+                <span class="tag">Selenium</span>
+                <span class="tag">Python</span>
+                <span class="tag">React JSX</span>
+                <span class="tag hot">🔥 AI Automation</span>
+                <span class="tag">REST APIs</span>
+                <span class="tag">Data Pipelines</span>
+                <span class="tag">Affiliate Systems</span>
+            </div>
+            <div class="hero-act    ions">
+                <a href="#contact" class="btn-primary">🚀 Start a Project</a>
+                <a href="#work" class="btn-secondary">View Portfolio →</a>
+            </div>
+        </div>
+        <div class="hero-stats">
+            <div class="stat">
+                <div class="stat-num">200+</div>
+                <div class="stat-label">GitHub Repos</div>
+            </div>
+            <div class="stat">
+                <div class="stat-num">500+</div>
+                <div class="stat-label">Blog Posts</div>
+            </div>
+            <div class="stat">
+                <div class="stat-num">100+</div>
+                <div class="stat-label">Canva Templates</div>
+            </div>
+            <div class="stat">
+                <div class="stat-num">5+</div>
+                <div class="stat-label">Live Deployments</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TICKER -->
+    <div class="ticker-wrap">
+        <div class="ticker">
+            <span class="ticker-item"><span>◆</span> FastAPI Backend</span>
+            <span class="ticker-item"><span>◆</span> Selenium Automation</span>
+            <span class="ticker-item"><span>◆</span> Web Scraping</span>
+            <span class="ticker-item"><span>◆</span> Python Scripting</span>
+            <span class="ticker-item"><span>◆</span> AI Digital Card</span>
+            <span class="ticker-item"><span>◆</span> LMS Platforms</span>
+            <span class="ticker-item"><span>◆</span> Affiliate Systems</span>
+            <span class="ticker-item"><span>◆</span> Data Automation</span>
+            <span class="ticker-item"><span>◆</span> React JSX</span>
+            <span class="ticker-item"><span>◆</span> 200+ GitHub Repos</span>
+            <span class="ticker-item"><span>◆</span> FastAPI Backend</span>
+            <span class="ticker-item"><span>◆</span> Selenium Automation</span>
+            <span class="ticker-item"><span>◆</span> Web Scraping</span>
+            <span class="ticker-item"><span>◆</span> Python Scripting</span>
+            <span class="ticker-item"><span>◆</span> AI Digital Card</span>
+            <span class="ticker-item"><span>◆</span> LMS Platforms</span>
+            <span class="ticker-item"><span>◆</span> Affiliate Systems</span>
+            <span class="ticker-item"><span>◆</span> Data Automation</span>
+            <span class="ticker-item"><span>◆</span> React JSX</span>
+            <span class="ticker-item"><span>◆</span> 200+ GitHub Repos</span>
+        </div>
+    </div>
+
+    <!-- SERVICES -->
+    <section class="services" id="services">
+        <p class="section-label">What I Build</p>
+        <h2 class="section-title">Services &amp; Skills</h2>
+        <div class="services-grid reveal">
+            <div class="service-card">
+                <span class="service-icon">⚡</span>
+                <div class="service-name">FastAPI Development</div>
+                <p class="service-desc">Production-ready REST APIs, async backends, JWT auth, database integration
+                    (PostgreSQL/MongoDB), and full API documentation.</p>
+                <div class="service-rate">Starting $15/hr · Fixed projects available</div>
+            </div>
+            <div class="service-card">
+                <span class="service-icon">🕷</span>
+                <div class="service-name">Web Scraping</div>
+                <p class="service-desc">Custom scrapers with BeautifulSoup, Scrapy, Playwright. Anti-bot bypass, proxy
+                    rotation, data pipelines, scheduled extraction.</p>
+                <div class="service-rate">Starting $12/hr · Per-site pricing</div>
+            </div>
+            <div class="service-card">
+                <span class="service-icon">🤖</span>
+                <div class="service-name">Selenium Automation</div>
+                <p class="service-desc">Browser automation for testing, form filling, data entry, RPA workflows, report
+                    generation, and scheduled jobs.</p>
+                <div class="service-rate">Starting $12/hr · Task bundles available</div>
+            </div>
+            <div class="service-card">
+                <span class="service-icon">🐍</span>
+                <div class="service-name">Python Programming</div>
+                <p class="service-desc">Scripts, bots, data processing, file automation, API integrations, CLI tools,
+                    and custom Python packages tailored to your workflow.</p>
+                <div class="service-rate">Starting $10/hr · Script packages</div>
+            </div>
+            <div class="service-card">
+                <span class="service-icon">🌐</span>
+                <div class="service-name">React JSX / Web Apps</div>
+                <p class="service-desc">Interactive SPAs, dashboards, portfolios, and landing pages. Deployed to Render,
+                    Vercel, GitHub Pages, or custom domains.</p>
+                <div class="service-rate">Starting $200/project</div>
+            </div>
+            <div class="service-card">
+                <span class="service-icon">📊</span>
+                <div class="service-name">Digital Assets &amp; Templates</div>
+                <p class="service-desc">Canva templates, AI digital cards, affiliate systems, LMS platforms, educational
+                    content, and SaaS micro-products.</p>
+                <div class="service-rate">Custom packages · Licensing available</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ASSETS / DIGITAL FOOTPRINT -->
+    <section class="assets" id="assets">
+        <p class="section-label">Digital Footprint</p>
+        <h2 class="section-title">Live Assets &amp; Platforms</h2>
+        <div class="assets-grid reveal">
+            <a href="https://affiliatemath.xyz" target="_blank" class="asset-card">
+                <span class="asset-badge">Domain</span>
+                <div class="asset-title">AffiliateMath.xyz</div>
+                <div class="asset-url">affiliatemath.xyz</div>
+                <div class="asset-desc">Deployed affiliate marketing domain — live, indexed, and ready for monetization
+                    or client showcase.</div>
+            </a>
+            <a href="https://ai-digital-card.onrender.com/" target="_blank" class="asset-card">
+                <span class="asset-badge">Live App</span>
+                <div class="asset-title">AI Digital Card</div>
+                <div class="asset-url">ai-digital-card.onrender.com</div>
+                <div class="asset-desc">Deployed AI-powered digital business card — interactive, modern, shareable.
+                    Built with FastAPI + React.</div>
+            </a>
+            <a href="https://ai-training-9.onrender.com/" target="_blank" class="asset-card">
+                <span class="asset-badge">Live App</span>
+                <div class="asset-title">AI Training Platform</div>
+                <div class="asset-url">ai-training-9.onrender.com</div>
+                <div class="asset-desc">Deployed AI training/LMS platform. Production FastAPI backend with interactive
+                    frontend.</div>
+            </a>
+            <a href="https://github.com/khanriyazi" target="_blank" class="asset-card">
+                <span class="asset-badge purple">GitHub</span>
+                <div class="asset-title">200+ GitHub Repos</div>
+                <div class="asset-url">github.com/khanriyazi</div>
+                <div class="asset-desc">200+ public repositories — Python tools, FastAPI projects, automation scripts,
+                    web apps, ML experiments.</div>
+            </a>
+            <a href="https://www.blogger.com/blog/posts/3329850273058131444" target="_blank" class="asset-card">
+                <span class="asset-badge orange">Blog</span>
+                <div class="asset-title">500+ Blog Posts</div>
+                <div class="asset-url">Blogger Platform</div>
+                <div class="asset-desc">500+ technical and educational blog posts covering Python, AI, automation, web
+                    development, and freelancing.</div>
+            </a>
+            <a href="https://www.canva.com/" target="_blank" class="asset-card">
+                <span class="asset-badge orange">Design</span>
+                <div class="asset-title">100+ Canva Templates</div>
+                <div class="asset-url">canva.com</div>
+                <div class="asset-desc">Professional and creative Canva templates for marketing, education, tech, and
+                    business use cases.</div>
+            </a>
+            <a href="https://www.youtube.com/@ThisOne-007" target="_blank" class="asset-card">
+                <span class="asset-badge orange">YouTube</span>
+                <div class="asset-title">YouTube Channel</div>
+                <div class="asset-url">@ThisOne-007</div>
+                <div class="asset-desc">Programming tutorials, automation demos, project walkthroughs, and tech content
+                    for developers.</div>
+            </a>
+            <a href="https://scratch.mit.edu/users/RizwanDreams/" target="_blank" class="asset-card">
+                <span class="asset-badge purple">Scratch</span>
+                <div class="asset-title">Scratch Projects</div>
+                <div class="asset-url">scratch.mit.edu/users/RizwanDreams</div>
+                <div class="asset-desc">Interactive projects and educational tools built for learners — showing range
+                    from beginner to advanced delivery.</div>
+            </a>
+        </div>
+    </section>
+
+    <!-- WORK GALLERY -->
+    <section class="work" id="work">
+        <p class="section-label">Portfolio</p>
+        <h2 class="section-title">Selected Work</h2>
+        <div class="work-masonry reveal">
+            <a href="https://khanriyazi.github.io/GHCR/" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">001</div>
+                    <div class="work-name">GHCR Repository Manager</div>
+                    <div class="work-type">GitHub · Web App</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+            <a href="https://khanriyazi.github.io/Link-Project/" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">002</div>
+                    <div class="work-name">Link Project Dashboard</div>
+                    <div class="work-type">Portfolio · HTML/CSS</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+            <a href="https://khanriyazi.github.io/Leraning_environment/" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">003</div>
+                    <div class="work-name">Learning Environment</div>
+                    <div class="work-type">EdTech · LMS</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+            <a href="https://khanriyazi.github.io/fastAPI_LMS/" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">004</div>
+                    <div class="work-name">FastAPI LMS Platform</div>
+                    <div class="work-type">FastAPI · Backend</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+            <a href="https://khanriyazi.github.io/Graphic-Designer/" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">005</div>
+                    <div class="work-name">Graphic Designer Portfolio</div>
+                    <div class="work-type">Design · Portfolio</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+            <a href="https://khanriyazi.github.io/Workshop/" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">006</div>
+                    <div class="work-name">Aligarh Workshop</div>
+                    <div class="work-type">Event · Landing Page</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+            <a href="https://khanriyazi.github.io/Link_Dashbord/" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">007</div>
+                    <div class="work-name">Link Manager Dashboard</div>
+                    <div class="work-type">Dashboard · Tool</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+            <a href="https://khanriyazi.github.io/DE-Portfolio/" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">008</div>
+                    <div class="work-name">Data Engineer Portfolio</div>
+                    <div class="work-type">Portfolio · Data</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+            <a href="https://khanriyazi.github.io/Design-thinking/" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">009</div>
+                    <div class="work-name">Design Thinking</div>
+                    <div class="work-type">UX · Research</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+            <a href="https://khanriyazi.github.io/Design-Book/" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">010</div>
+                    <div class="work-name">Design Book</div>
+                    <div class="work-type">Digital Asset · Book</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+            <a href="https://khanriyazi.github.io/AI-touch/" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">011</div>
+                    <div class="work-name">AI Touch Interface</div>
+                    <div class="work-type">AI · Interactive</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+            <a href="https://khanriyazi.github.io/Affiliate_marketing/" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">012</div>
+                    <div class="work-name">Affiliate Marketing System</div>
+                    <div class="work-type">Affiliate · Automation</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+            <a href="https://khanriyazi.github.io/touch-to-earn/" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">013</div>
+                    <div class="work-name">Touch to Earn</div>
+                    <div class="work-type">Web App · Gamified</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+            <a href="https://khanriyazi.github.io/me/pages/ai_index.html" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">014</div>
+                    <div class="work-name">AI Index Page</div>
+                    <div class="work-type">AI · Landing Page</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+            <a href="https://khanriyazi.github.io/me/pages/IT.html" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">015</div>
+                    <div class="work-name">IT Services Page</div>
+                    <div class="work-type">IT · Services</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+            <a href="https://khanriyazi.github.io/me/pages/assets.html" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">016</div>
+                    <div class="work-name">Digital Assets Hub</div>
+                    <div class="work-type">Assets · Portfolio</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+            <a href="https://khanriyazi.github.io/me/" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">017</div>
+                    <div class="work-name">Personal Hub (me/)</div>
+                    <div class="work-type">Portfolio · Personal</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+            <a href="https://ai-digital-card.onrender.com/" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">018</div>
+                    <div class="work-name">AI Digital Card — Live</div>
+                    <div class="work-type">FastAPI · Deployed</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+            <a href="https://ai-training-9.onrender.com/" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">019</div>
+                    <div class="work-name">AI Training Platform — Live</div>
+                    <div class="work-type">LMS · FastAPI · Deployed</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+            <a href="https://affiliatemath.xyz" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">020</div>
+                    <div class="work-name">AffiliateMath.xyz</div>
+                    <div class="work-type">Domain · Affiliate</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+            <a href="https://scratch.mit.edu/users/RizwanDreams/" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">021</div>
+                    <div class="work-name">Scratch Projects</div>
+                    <div class="work-type">Education · Interactive</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+            <a href="https://www.youtube.com/@ThisOne-007" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">022</div>
+                    <div class="work-name">YouTube Channel</div>
+                    <div class="work-type">Content · Tutorials</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+            <a href="https://github.com/khanriyazi" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">023</div>
+                    <div class="work-name">GitHub — 200+ Repos</div>
+                    <div class="work-type">Open Source · Code</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+            <a href="https://www.blogger.com/blog/posts/3329850273058131444" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">024</div>
+                    <div class="work-name">500+ Tech Blog Posts</div>
+                    <div class="work-type">Content · Blogger</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+            <a href="https://khanriyazi.github.io/Design-thinking/" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">025</div>
+                    <div class="work-name">UX Design System</div>
+                    <div class="work-type">Design · Thinking</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+            <a href="https://khanriyazi.github.io/me/pages/IT.html" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">026</div>
+                    <div class="work-name">IT Consulting Portal</div>
+                    <div class="work-type">IT · Services</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+            <a href="https://khanriyazi.github.io/Link_Dashbord/" target="_blank" class="work-item">
+                <div class="work-inner">
+                    <div class="work-num">027</div>
+                    <div class="work-name">Link Analytics Dashboard</div>
+                    <div class="work-type">Dashboard · Analytics</div>
+                </div><span class="work-arrow">↗</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- MARQUEE -->
+    <div class="marquee-section">
+        <p class="marquee-label">Platforms &amp; Technologies</p>
+        <div style="overflow:hidden">
+            <div class="marquee-track">
+                <span class="marquee-item">Python</span>
+                <span class="marquee-item">FastAPI</span>
+                <span class="marquee-item">Selenium</span>
+                <span class="marquee-item">BeautifulSoup</span>
+                <span class="marquee-item">React JSX</span>
+                <span class="marquee-item">PostgreSQL</span>
+                <span class="marquee-item">MongoDB</span>
+                <span class="marquee-item">Render</span>
+                <span class="marquee-item">GitHub Pages</span>
+                <span class="marquee-item">Vercel</span>
+                <span class="marquee-item">Canva API</span>
+                <span class="marquee-item">Scratch</span>
+                <span class="marquee-item">Blogger</span>
+                <span class="marquee-item">YouTube</span>
+                <span class="marquee-item">Python</span>
+                <span class="marquee-item">FastAPI</span>
+                <span class="marquee-item">Selenium</span>
+                <span class="marquee-item">BeautifulSoup</span>
+                <span class="marquee-item">React JSX</span>
+                <span class="marquee-item">PostgreSQL</span>
+                <span class="marquee-item">MongoDB</span>
+                <span class="marquee-item">Render</span>
+                <span class="marquee-item">GitHub Pages</span>
+                <span class="marquee-item">Vercel</span>
+                <span class="marquee-item">Canva API</span>
+                <span class="marquee-item">Scratch</span>
+                <span class="marquee-item">Blogger</span>
+                <span class="marquee-item">YouTube</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROCESS -->
+    <section class="process" id="process">
+        <p class="section-label">How It Works</p>
+        <h2 class="section-title">My Process</h2>
+        <div class="process-steps reveal">
+            <div class="step">
+                <div class="step-title">Discovery Call</div>
+                <p class="step-desc">We discuss your project goals, technical requirements, timeline, and budget. I ask
+                    the right questions to scope it precisely.</p>
+            </div>
+            <div class="step">
+                <div class="step-title">Proposal &amp; Quote</div>
+                <p class="step-desc">You receive a detailed proposal with deliverables, milestones, technologies used,
+                    and a fixed or hourly rate — no surprises.</p>
+            </div>
+            <div class="step">
+                <div class="step-title">Build &amp; Iterate</div>
+                <p class="step-desc">I develop in sprints, share progress updates, and iterate based on your feedback.
+                    GitHub or shared environments throughout.</p>
+            </div>
+            <div class="step">
+                <div class="step-title">Deploy &amp; Handoff</div>
+                <p class="step-desc">Full deployment on your preferred platform, documentation, source code, and
+                    optional post-launch support. You own everything.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section class="contact" id="contact">
+        <p class="section-label">Let's Build Together</p>
+        <h2 class="section-title">Hire Me</h2>
+        <div class="contact-grid">
+            <div class="contact-info">
+                <p>I'm available for freelance projects — short-term tasks, long-term contracts, and ongoing retainers.
+                    National and international clients welcome. Fast response, clean code, on-time delivery.</p>
+                <div class="contact-links">
+                    <a href="https://github.com/khanriyazi" target="_blank" class="contact-link"><span
+                            class="dot"></span> github.com/khanriyazi</a>
+                    <a href="https://affiliatemath.xyz" target="_blank" class="contact-link"><span class="dot"></span>
+                        affiliatemath.xyz</a>
+                    <a href="https://ai-digital-card.onrender.com/" target="_blank" class="contact-link"><span
+                            class="dot"></span> ai-digital-card.onrender.com</a>
+                    <a href="https://ai-training-9.onrender.com/" target="_blank" class="contact-link"><span
+                            class="dot"></span> ai-training-9.onrender.com</a>
+                    <a href="https://www.youtube.com/@ThisOne-007" target="_blank" class="contact-link"><span
+                            class="dot"></span> YouTube @ThisOne-007</a>
+                    <a href="https://www.blogger.com/blog/posts/3329850273058131444" target="_blank"
+                        class="contact-link"><span class="dot"></span> 500+ Blog Posts</a>
+                    <a href="https://scratch.mit.edu/users/RizwanDreams/" target="_blank" class="contact-link"><span
+                            class="dot"></span> Scratch: RizwanDreams</a>
+                </div>
+            </div>
+            <form class="contact-form" id="contactForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Your Name</label>
+                        <input type="text" class="form-input" placeholder="Jane Smith" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" placeholder="jane@company.com" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Service Needed</label>
+                    <select class="form-select form-input">
+                        <option value="">Select a service...</option>
+                        <option>FastAPI Backend Development</option>
+                        <option>Web Scraping</option>
+                        <option>Selenium Automation</option>
+                        <option>Python Scripting</option>
+                        <option>React Web App</option>
+                        <option>Digital Asset / Template</option>
+                        <option>Full-Stack Project</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Budget (USD)</label>
+                        <select class="form-select form-input">
+                            <option>Under $100</option>
+                            <option>$100–$500</option>
+                            <option>$500–$2,000</option>
+                            <option>$2,000+</option>
+                            <option>Monthly retainer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Timeline</label>
+                        <select class="form-select form-input">
+                            <option>ASAP (1–3 days)</option>
+                            <option>1 week</option>
+                            <option>2–4 weeks</option>
+                            <option>1–3 months</option>
+                            <option>Ongoing</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Project Details</label>
+                    <textarea class="form-textarea"
+                        placeholder="Describe your project, goals, and any technical requirements..."
+                        required></textarea>
+                </div>
+                <button type="submit" class="form-submit">🚀 Send Project Brief</button>
+                <p id="formMsg"
+                    style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--accent);display:none;margin-top:.5rem">
+                    ✓ Message sent! I'll respond within 24 hours.</p>
+            </form>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-brand">KR.</div>
+        <p class="footer-copy">© 2025 Khan Riyazi · Freelancer · India 🇮🇳</p>
+        <div class="footer-socials">
+            <a href="https://github.com/khanriyazi" target="_blank">GitHub</a>
+            <a href="https://www.youtube.com/@ThisOne-007" target="_blank">YouTube</a>
+            <a href="https://affiliatemath.xyz" target="_blank">Blog</a>
+            <a href="https://ai-digital-card.onrender.com/" target="_blank">Card</a>
+        </div>
+    </footer>
+
+    <a href="#contact" class="float-cta">💼 Available for Hire</a>
+
+    <script>
+        // CURSOR
+        const cursor = document.getElementById('cursor');
+        const ring = document.getElementById('cursorRing');
+        let mx = 0, my = 0, rx = 0, ry = 0;
+        document.addEventListener('mousemove', e => {
+            mx = e.clientX; my = e.clientY;
+            cursor.style.left = mx - 5 + 'px'; cursor.style.top = my - 5 + 'px';
+        });
+        function animRing() {
+            rx += (mx - rx) * .12; ry += (my - ry) * .12;
+            ring.style.left = rx - 18 + 'px'; ring.style.top = ry - 18 + 'px';
+            requestAnimationFrame(animRing);
+        } animRing();
+        document.querySelectorAll('a,button').forEach(el => {
+            el.addEventListener('mouseenter', () => { ring.style.width = '56px'; ring.style.height = '56px' });
+            el.addEventListener('mouseleave', () => { ring.style.width = '36px'; ring.style.height = '36px' });
+        });
+
+        // SCROLL REVEAL
+        const obs = new IntersectionObserver(entries => {
+            entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible') });
+        }, { threshold: .1 });
+        document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+        // FORM
+        document.getElementById('contactForm').addEventListener('submit', e => {
+            e.preventDefault();
+            const msg = document.getElementById('formMsg');
+            msg.style.display = 'block';
+            setTimeout(() => { msg.style.display = 'none'; e.target.reset() }, 4000);
+        });
+
+        // NAV highlight
+        const sections = document.querySelectorAll('section[id]');
+        const links = document.querySelectorAll('.nav-links a');
+        window.addEventListener('scroll', () => {
+            let cur = '';
+            sections.forEach(s => { if (window.scrollY >= s.offsetTop - 100) cur = s.id });
+            links.forEach(l => { l.style.color = l.getAttribute('href') === '#' + cur ? 'var(--accent)' : 'var(--muted)' });
+        });
+    </script>
+</body>
+
+</html>
